@@ -1,11 +1,9 @@
 {
   "name": "zarx-fundraising",
   "version": "1.0.0",
-  "description": "ZARX AI Crowdfunding Platform",
   "scripts": {
+    "build": "echo 'No build needed'",
     "dev": "vercel dev",
     "deploy": "vercel --prod"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+  }
 }
