@@ -1,13 +1,12 @@
-// Progress tracking data (update these manually)
+// VERCEL VERSION - Calls backend API instead of Resend directly
+// This fixes CORS issues!
+
+// Progress tracking data
 let fundingData = {
     raised: 0,
     goal: 8000,
     backers: 0
 };
-
-// Resend API configuration
-const RESEND_API_KEY = "re_j8NobzxA_DDZor9gHEHKyofbDufFatxK1";
-const RESEND_AUDIENCE_ID = ""; // You'll get this after creating an audience in Resend
 
 // Update progress bar and stats
 function updateProgress() {
@@ -41,221 +40,6 @@ function animateValue(id, start, end, duration, prefix = '') {
     }, 16);
 }
 
-// Add email to Resend audience
-async function addToResendAudience(email, firstName, tier, amount, method) {
-    try {
-        const response = await fetch('https://api.resend.com/audiences/' + RESEND_AUDIENCE_ID + '/contacts', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${RESEND_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email: email,
-                first_name: firstName,
-                unsubscribed: false
-            })
-        });
-
-        if (response.ok) {
-            console.log('✓ Email added to Resend audience');
-            return true;
-        } else {
-            const error = await response.json();
-            console.error('Resend API error:', error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Failed to add email:', error);
-        return false;
-    }
-}
-
-// Send immediate thank you email via Resend
-async function sendThankYouEmail(email, name, amount, tier, method) {
-    try {
-        const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${RESEND_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                from: 'ZARX Project <onboarding@resend.dev>', // Change to your verified domain
-                to: [email],
-                subject: `Thank you for supporting ZARX, ${name}! 🚀`,
-                html: `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <style>
-                            body {
-                                font-family: 'Arial', sans-serif;
-                                background-color: #0a0a0a;
-                                color: #ffffff;
-                                padding: 20px;
-                            }
-                            .container {
-                                max-width: 600px;
-                                margin: 0 auto;
-                                background-color: #1a1a1a;
-                                border: 3px solid #00ff88;
-                                padding: 40px;
-                            }
-                            .header {
-                                text-align: center;
-                                margin-bottom: 30px;
-                            }
-                            .header h1 {
-                                color: #00ff88;
-                                font-size: 32px;
-                                margin: 0;
-                            }
-                            .amount {
-                                font-size: 48px;
-                                color: #00ff88;
-                                text-align: center;
-                                margin: 30px 0;
-                                font-weight: bold;
-                            }
-                            .details {
-                                background-color: #111111;
-                                border-left: 4px solid #00ff88;
-                                padding: 20px;
-                                margin: 20px 0;
-                            }
-                            .details p {
-                                margin: 10px 0;
-                            }
-                            .footer {
-                                text-align: center;
-                                margin-top: 30px;
-                                padding-top: 20px;
-                                border-top: 2px solid #333;
-                                color: #666;
-                                font-size: 14px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <div class="header">
-                                <h1>🚀 Thank You for Supporting ZARX!</h1>
-                            </div>
-                            
-                            <p>Hey ${name},</p>
-                            
-                            <p>You're amazing! Thank you for believing in this project.</p>
-                            
-                            <div class="amount">$${amount}</div>
-                            
-                            <div class="details">
-                                <p><strong>Your Support Details:</strong></p>
-                                <p>💰 Amount: $${amount}</p>
-                                <p>💳 Method: ${method}</p>
-                                <p>🎖️ Tier: ${tier}</p>
-                                <p>📅 Date: ${new Date().toLocaleDateString()}</p>
-                            </div>
-                            
-                            <p>I'm verifying your transaction right now. You'll be added to the supporters list within 24 hours!</p>
-                            
-                            <p><strong>What's next:</strong></p>
-                            <ul>
-                                <li>✓ Transaction verification</li>
-                                <li>✓ Added to supporters list</li>
-                                <li>✓ Tier benefits delivered</li>
-                                <li>✓ Monthly progress updates</li>
-                            </ul>
-                            
-                            <p>You're not just donating - you're part of building something that could make AI accessible to millions of people who can't afford $20/month subscriptions.</p>
-                            
-                            <p>I'm going to work my ass off to make this work. Not just for me, but for everyone who believed in this when it was just code on a laptop.</p>
-                            
-                            <p><strong>Stay in touch:</strong></p>
-                            <p>📧 Email me anytime: akikfaraji@gmail.com</p>
-                            <p>🌐 Website: https://fraziym.tech</p>
-                            <p>💬 Discord invite coming in next email!</p>
-                            
-                            <p>Thanks for being here from the start. Your name will be in the credits when this thing launches.</p>
-                            
-                            <p>- Akik</p>
-                            <p style="color: #666;">19 years old, failed exams, betting everything on this</p>
-                            
-                            <div class="footer">
-                                <p>FRAZIYM TECH & AI • Building in Bangladesh 🇧🇩</p>
-                                <p>Questions? Reply to this email anytime.</p>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `
-            })
-        });
-
-        if (response.ok) {
-            console.log('✓ Thank you email sent');
-            return true;
-        } else {
-            const error = await response.json();
-            console.error('Email send error:', error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Failed to send email:', error);
-        return false;
-    }
-}
-
-// Send admin notification
-async function sendAdminNotification(email, name, amount, tier, method, transactionId) {
-    try {
-        const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${RESEND_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                from: 'ZARX Notifications <onboarding@resend.dev>',
-                to: ['akikfaraji@gmail.com'], // Your email
-                subject: `💰 NEW DONATION: $${amount} from ${name} via ${method}`,
-                html: `
-                    <div style="font-family: monospace; background: #0a0a0a; color: #fff; padding: 20px;">
-                        <div style="background: #00ff88; color: #0a0a0a; padding: 20px; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px;">
-                            💰 NEW DONATION RECEIVED!
-                        </div>
-                        <div style="background: #1a1a1a; border: 2px solid #00ff88; padding: 20px; font-size: 16px;">
-                            <p><strong>DONOR INFO:</strong></p>
-                            <p>Name: ${name}</p>
-                            <p>Email: ${email}</p>
-                            <p>Amount: $${amount}</p>
-                            <p>Tier: ${tier}</p>
-                            <p>Method: ${method}</p>
-                            <p>Transaction ID: ${transactionId || 'Not provided'}</p>
-                            <p>Time: ${new Date().toLocaleString()}</p>
-                            <p></p>
-                            <p><strong>ACTION REQUIRED:</strong></p>
-                            <p>1. Verify the transaction in your ${method} account/wallet</p>
-                            <p>2. Add ${name} to supporters list on website</p>
-                            <p>3. Send them tier benefits (Discord invite, etc.)</p>
-                            <p>4. Update funding progress: updateFundingData(newAmount, newBackers)</p>
-                            <p></p>
-                            <p style="color: #00ff88;"><strong>✓ Email already added to Resend audience for updates</strong></p>
-                        </div>
-                    </div>
-                `
-            })
-        });
-
-        if (response.ok) {
-            console.log('✓ Admin notification sent');
-            return true;
-        }
-    } catch (error) {
-        console.error('Failed to send admin notification:', error);
-    }
-}
-
 // Tier selection
 function selectTier(amount) {
     showPaymentModal(amount);
@@ -279,7 +63,7 @@ function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.innerHTML = `
-        <span style="margin-right: 10px;">${type === 'success' ? '✓' : '⚠'}</span>
+        <span style="margin-right: 10px;">${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ'}</span>
         ${message}
     `;
     notification.style.cssText = `
@@ -409,7 +193,7 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 5:</strong> Fill the form below after payment
                 </div>
                 <div class="instruction-note">
-                    ⚡ You'll receive confirmation email instantly and be added to supporters list within 24 hours!
+                    ⚡ After submitting, I'll verify within 24-48 hours
                 </div>
             `
         },
@@ -436,7 +220,7 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 5:</strong> Fill the form below after payment
                 </div>
                 <div class="instruction-note">
-                    ⚡ You'll receive confirmation email instantly!
+                    ⚡ After submitting, I'll verify within 24-48 hours
                 </div>
             `
         },
@@ -463,7 +247,7 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 5:</strong> Fill the form below after payment
                 </div>
                 <div class="instruction-note">
-                    ⚡ You'll receive confirmation email instantly!
+                    ⚡ After submitting, I'll verify within 24-48 hours
                 </div>
             `
         },
@@ -491,7 +275,7 @@ function processPayment(method, amount, bdtAmount = null) {
                 </div>
                 <div class="instruction-note">
                     ✅ Wise works great from Bangladesh! Send from your BD bank in BDT.<br>
-                    You'll receive confirmation email instantly!
+                    After submitting, I'll verify within 24-48 hours
                 </div>
             `
         },
@@ -518,7 +302,7 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 5:</strong> Fill the form below after payment
                 </div>
                 <div class="instruction-note">
-                    ✅ You'll receive confirmation email instantly!
+                    ✅ After submitting, I'll verify within 24-48 hours
                 </div>
             `
         },
@@ -532,24 +316,24 @@ function processPayment(method, amount, bdtAmount = null) {
                 <div class="crypto-option">
                     <strong>Bitcoin (BTC)</strong><br>
                     <div class="crypto-address">
-                        <code>bc1qXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>
-                        <button onclick="copyText('bc1qXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')" class="btn-copy">Copy</button>
+                        <code>1Naqfw1gLbCwazC2DcvuGk8kECSQGy8y6b</code>
+                        <button onclick="copyText('1Naqfw1gLbCwazC2DcvuGk8kECSQGy8y6b')" class="btn-copy">Copy</button>
                     </div>
                 </div>
                 
                 <div class="crypto-option">
                     <strong>USDT (TRC20)</strong> - Recommended (Low fees!)<br>
                     <div class="crypto-address">
-                        <code>TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>
-                        <button onclick="copyText('TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')" class="btn-copy">Copy</button>
+                        <code>TG3eJ8EcUQuUekfHpy4ZKMXrqVyadPvQd8</code>
+                        <button onclick="copyText('TG3eJ8EcUQuUekfHpy4ZKMXrqVyadPvQd8')" class="btn-copy">Copy</button>
                     </div>
                 </div>
                 
                 <div class="crypto-option">
                     <strong>Ethereum (ETH)</strong><br>
                     <div class="crypto-address">
-                        <code>0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>
-                        <button onclick="copyText('0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')" class="btn-copy">Copy</button>
+                        <code>0x940a1b9a2b7434d30bc26699542d12d7b3ad7626</code>
+                        <button onclick="copyText('0x940a1b9a2b7434d30bc26699542d12d7b3ad7626')" class="btn-copy">Copy</button>
                     </div>
                 </div>
                 
@@ -559,7 +343,7 @@ function processPayment(method, amount, bdtAmount = null) {
                 
                 <div class="instruction-note">
                     ⚠️ Double-check addresses! Wrong network = lost funds forever.<br>
-                    ✅ You'll receive confirmation email instantly!
+                    ✅ After submitting, I'll verify within 24-48 hours
                 </div>
             `
         }
@@ -584,21 +368,21 @@ function showPaymentInstructions(content, amount, method) {
             </div>
             
             <div class="donor-form">
-                <h4>📋 Submit Your Details</h4>
-                <p class="form-subtitle">Fill this after completing payment to receive instant confirmation</p>
+                <h4>📋 Submit After Payment</h4>
+                <p class="form-subtitle">Complete your payment first, then fill this form</p>
                 
                 <form id="donorForm" onsubmit="submitDonation(event, ${amount}, '${method}', '${tierName}')">
                     <input type="text" id="donorName" placeholder="Your Name *" required class="form-input">
                     <input type="email" id="donorEmail" placeholder="Your Email *" required class="form-input">
-                    <input type="text" id="transactionId" placeholder="Transaction ID / Hash (optional)" class="form-input">
+                    <input type="text" id="transactionId" placeholder="Transaction ID / Hash *" required class="form-input">
                     
                     <div class="form-note">
-                        <strong>✓ You'll receive instant confirmation email</strong><br>
-                        <small>We'll add you to monthly updates automatically</small>
+                        <strong>⏳ Verification Process</strong><br>
+                        <small>I'll verify your payment within 24-48 hours and send confirmation with tier benefits</small>
                     </div>
                     
                     <button type="submit" class="btn btn-submit" id="submitBtn">
-                        ✓ Submit & Get Confirmation Email
+                        ✓ Submit for Verification
                     </button>
                 </form>
             </div>
@@ -615,7 +399,7 @@ function showPaymentInstructions(content, amount, method) {
     document.body.appendChild(modal);
 }
 
-// Submit donation (with Resend integration)
+// Submit donation - NOW CALLS VERCEL API!
 async function submitDonation(event, amount, method, tierName) {
     event.preventDefault();
     
@@ -636,35 +420,41 @@ async function submitDonation(event, amount, method, tierName) {
     submitBtn.innerHTML = '⏳ Sending...';
     
     try {
-        // Add to Resend audience
-        const audienceAdded = await addToResendAudience(email, name, tierName, amount, method);
+        // Call Vercel API endpoint
+        const response = await fetch('/api/donate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                amount: amount,
+                method: method,
+                tier: tierName,
+                transactionId: transactionId
+            })
+        });
         
-        // Send thank you email
-        const emailSent = await sendThankYouEmail(email, name, amount, tierName, method);
+        const result = await response.json();
         
-        // Send admin notification
-        await sendAdminNotification(email, name, amount, tierName, method, transactionId);
-        
-        if (emailSent) {
-            showNotification('✓ Confirmation email sent! Check your inbox.', 'success');
-            showNotification('✓ You\'re now subscribed to monthly updates!', 'success');
+        if (response.ok && result.success) {
+            showNotification('✓ Submission received! Check your email for details.', 'success');
+            showNotification('⏳ Your donation is pending verification (24-48 hours)', 'warning');
             
             // Close modal after success
             setTimeout(() => {
                 closePaymentModal();
-            }, 2000);
-        } else {
-            showNotification('Email sent but check your spam folder', 'warning');
-            setTimeout(() => {
-                closePaymentModal();
             }, 3000);
+        } else {
+            throw new Error(result.error || 'Submission failed');
         }
         
     } catch (error) {
         console.error('Submission error:', error);
         showNotification('Something went wrong. Please email akikfaraji@gmail.com', 'error');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '✓ Submit & Get Confirmation Email';
+        submitBtn.innerHTML = '✓ Submit for Verification';
     }
 }
 

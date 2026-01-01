@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Vercel
+.vercel
+
+# Environment variables (don't commit these!)
+.env
+.env.local
+.env.production
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Internal notes (don't commit)
+CLEANUP-SUMMARY.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
