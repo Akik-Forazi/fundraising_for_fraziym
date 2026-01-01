@@ -1,6 +1,7 @@
 // VERCEL VERSION - Calls backend API instead of Resend directly
 // This fixes CORS issues!
-
+// paypal message to add after opening a paypal account.
+// After submitting, I'll verify within 24-48 hours
 // Progress tracking data
 let fundingData = {
     raised: 0,
@@ -183,8 +184,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 2:</strong> Select "Send Money"
                 </div>
                 <div class="instruction-step">
-                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01XXXXXXXXX</span>
-                    <button onclick="copyText('01XXXXXXXXX')" class="btn-copy">Copy</button>
+                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01340172132</span>
+                    <button onclick="copyText('01340172132')" class="btn-copy">Copy</button>
                 </div>
                 <div class="instruction-step">
                     <strong>Step 4:</strong> Reference: "ZARX Support"
@@ -210,8 +211,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 2:</strong> Select "Send Money"
                 </div>
                 <div class="instruction-step">
-                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01XXXXXXXXX</span>
-                    <button onclick="copyText('01XXXXXXXXX')" class="btn-copy">Copy</button>
+                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01340172132</span>
+                    <button onclick="copyText('01340172132')" class="btn-copy">Copy</button>
                 </div>
                 <div class="instruction-step">
                     <strong>Step 4:</strong> Reference: "ZARX Support"
@@ -237,8 +238,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 2:</strong> Select "Send Money"
                 </div>
                 <div class="instruction-step">
-                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01XXXXXXXXX</span>
-                    <button onclick="copyText('01XXXXXXXXX')" class="btn-copy">Copy</button>
+                    <strong>Step 3:</strong> Send to: <span class="highlight-number">017857310890</span>
+                    <button onclick="copyText('017857310890')" class="btn-copy">Copy</button>
                 </div>
                 <div class="instruction-step">
                     <strong>Step 4:</strong> Reference: "ZARX Support"
@@ -302,8 +303,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 5:</strong> Fill the form below after payment
                 </div>
                 <div class="instruction-note">
-                    ✅ After submitting, I'll verify within 24-48 hours
-                </div>
+                    Paypal is not available. please do not send in paypal.
+                </div> 
             `
         },
         'Crypto': {
