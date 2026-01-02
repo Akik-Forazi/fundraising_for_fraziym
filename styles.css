@@ -414,11 +414,6 @@ section {
     transform: translateY(-5px);
 }
 
-.breakdown-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-}
-
 .breakdown-amount {
     font-family: 'JetBrains Mono', monospace;
     font-size: 28px;
