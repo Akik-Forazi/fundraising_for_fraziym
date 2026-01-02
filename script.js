@@ -245,8 +245,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 2:</strong> Select "Send Money"
                 </div>
                 <div class="instruction-step">
-                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01XXXXXXXXX</span>
-                    <button onclick="copyText('01XXXXXXXXX')" class="btn-copy">Copy</button>
+                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01340172132</span>
+                    <button onclick="copyText('01340172132')" class="btn-copy">Copy</button>
                 </div>
                 <div class="instruction-step">
                     <strong>Step 4:</strong> Reference: "ZARX Support"
@@ -272,8 +272,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 2:</strong> Select "Send Money"
                 </div>
                 <div class="instruction-step">
-                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01XXXXXXXXX</span>
-                    <button onclick="copyText('01XXXXXXXXX')" class="btn-copy">Copy</button>
+                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01340172132</span>
+                    <button onclick="copyText('01340172132')" class="btn-copy">Copy</button>
                 </div>
                 <div class="instruction-step">
                     <strong>Step 4:</strong> Reference: "ZARX Support"
@@ -299,8 +299,8 @@ function processPayment(method, amount, bdtAmount = null) {
                     <strong>Step 2:</strong> Select "Send Money"
                 </div>
                 <div class="instruction-step">
-                    <strong>Step 3:</strong> Send to: <span class="highlight-number">01XXXXXXXXX</span>
-                    <button onclick="copyText('01XXXXXXXXX')" class="btn-copy">Copy</button>
+                    <strong>Step 3:</strong> Send to: <span class="highlight-number">017857310890</span>
+                    <button onclick="copyText('017857310890')" class="btn-copy">Copy</button>
                 </div>
                 <div class="instruction-step">
                     <strong>Step 4:</strong> Reference: "ZARX Support"
