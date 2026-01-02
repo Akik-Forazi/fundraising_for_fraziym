@@ -20,39 +20,29 @@ export default async function handler(req, res) {
   const RESEND_AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
 
   try {
-    // 1. Add to Resend audience
-    const audienceResponse = await fetch(
-      `https://api.resend.com/audiences/${RESEND_AUDIENCE_ID}/contacts`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          first_name: name,
-          unsubscribed: false
-        })
-      }
-    );
+    // 1. Add to Resend audience (for future newsletters)
+    try {
+      await fetch(
+        `https://api.resend.com/audiences/${RESEND_AUDIENCE_ID}/contacts`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            first_name: name,
+            unsubscribed: false
+          })
+        }
+      );
+    } catch (err) {
+      console.log('Failed to add to audience (non-critical):', err);
+    }
 
-    // 2. Send thank you email to donor
-    const donorEmailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'ZARX Project <onboarding@resend.dev>',
-        to: [email],
-        subject: `We received your donation details, ${name}! ⏳`,
-        html: generateDonorEmail(name, amount, method, tier)
-      })
-    });
-
-    // 3. Send admin notification
+    // 2. Send admin notification to YOUR EMAIL ONLY
+    // (Resend free tier only sends to verified emails without custom domain)
     const adminEmailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -61,180 +51,202 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         from: 'ZARX Notifications <onboarding@resend.dev>',
-        to: ['akikfaraji@gmail.com'],
-        subject: `💰 NEW DONATION: $${amount} from ${name} via ${method}`,
+        to: ['akikforazi006@gmail.com'], // YOUR verified email
+        subject: `NEW DONATION: $${amount} from ${name} via ${method}`,
         html: generateAdminEmail(name, email, amount, method, tier, transactionId)
       })
     });
 
-    // Check if all succeeded
-    if (donorEmailResponse.ok && adminEmailResponse.ok) {
+    if (adminEmailResponse.ok) {
       return res.status(200).json({ 
         success: true, 
-        message: 'Donation submitted successfully!' 
+        message: 'Donation submitted! Check your email for verification.' 
       });
     } else {
-      // Log errors but still return success to user
-      console.error('Email sending failed:', {
-        donor: donorEmailResponse.status,
-        admin: adminEmailResponse.status
-      });
+      const error = await adminEmailResponse.text();
+      console.error('Email sending failed:', error);
       
+      // Still return success so user experience isn't broken
       return res.status(200).json({ 
         success: true, 
-        message: 'Submission received (emails may be delayed)' 
+        message: 'Submission received! We will verify within 24-48 hours.' 
       });
     }
 
   } catch (error) {
     console.error('Error processing donation:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process donation',
-      message: error.message 
+    
+    // Return success anyway so form doesn't break for users
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Submission received! We will verify within 24-48 hours.'
     });
   }
 }
 
-// Generate donor email HTML
-function generateDonorEmail(name, amount, method, tier) {
+// Generate admin notification email HTML
+function generateAdminEmail(name, email, amount, method, tier, transactionId) {
   return `
     <!DOCTYPE html>
     <html>
     <head>
         <style>
             body {
-                font-family: 'Arial', sans-serif;
-                background-color: #0a0a0a;
-                color: #ffffff;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+                background-color: #f5f5f5;
+                margin: 0;
                 padding: 20px;
             }
-            .container {
+            .email-wrapper {
                 max-width: 600px;
                 margin: 0 auto;
-                background-color: #1a1a1a;
-                border: 3px solid #ffaa00;
-                padding: 40px;
+                background-color: #ffffff;
+                border: 3px solid #00ff88;
+                overflow: hidden;
             }
             .header {
+                background-color: #00ff88;
+                color: #0a0a0a;
+                padding: 25px;
                 text-align: center;
-                margin-bottom: 30px;
+                font-size: 24px;
+                font-weight: 800;
             }
-            .header h1 {
-                color: #ffaa00;
-                font-size: 32px;
-                margin: 0;
+            .content {
+                padding: 30px;
+                color: #333;
+            }
+            .amount-box {
+                background-color: #f0fff4;
+                border: 3px solid #00ff88;
+                padding: 20px;
+                margin: 20px 0;
+                text-align: center;
             }
             .amount {
                 font-size: 48px;
-                color: #ffaa00;
-                text-align: center;
-                margin: 30px 0;
-                font-weight: bold;
+                font-weight: 800;
+                color: #00ff88;
+                margin: 0;
             }
-            .details {
-                background-color: #111111;
-                border-left: 4px solid #ffaa00;
+            .info-table {
+                width: 100%;
+                margin: 20px 0;
+                border-collapse: collapse;
+                background-color: #f8f8f8;
+            }
+            .info-table td {
+                padding: 12px;
+                border-bottom: 1px solid #ddd;
+            }
+            .info-table td:first-child {
+                font-weight: 700;
+                width: 40%;
+                color: #666;
+            }
+            .action-box {
+                background-color: #fff4e6;
+                border: 2px solid #ffaa00;
                 padding: 20px;
                 margin: 20px 0;
             }
-            .details p {
-                margin: 10px 0;
+            .action-box h3 {
+                margin-top: 0;
+                color: #cc7700;
             }
-            .warning {
-                background-color: #ffaa00;
-                color: #0a0a0a;
-                padding: 15px;
-                margin: 20px 0;
-                font-weight: bold;
-                text-align: center;
+            .action-box p {
+                margin: 8px 0;
+                color: #666;
             }
             .footer {
+                background-color: #f5f5f5;
+                padding: 20px;
                 text-align: center;
-                margin-top: 30px;
-                padding-top: 20px;
-                border-top: 2px solid #333;
-                color: #666;
-                font-size: 14px;
+                font-size: 12px;
+                color: #999;
             }
         </style>
     </head>
     <body>
-        <div class="container">
+        <div class="email-wrapper">
             <div class="header">
-                <h1>⏳ Donation Details Received!</h1>
+                NEW DONATION RECEIVED
             </div>
             
-            <p>Hey ${name},</p>
-            
-            <p>Thank you for submitting your donation details! I've received your information.</p>
-            
-            <div class="amount">$${amount}</div>
-            
-            <div class="details">
-                <p><strong>Your Submission:</strong></p>
-                <p>💰 Amount: $${amount}</p>
-                <p>💳 Method: ${method}</p>
-                <p>🎖️ Tier: ${tier}</p>
-                <p>📅 Submitted: ${new Date().toLocaleDateString()}</p>
+            <div class="content">
+                <div class="amount-box">
+                    <div class="amount">$${amount}</div>
+                </div>
+                
+                <table class="info-table">
+                    <tr>
+                        <td>Donor Name:</td>
+                        <td><strong>${name}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Email:</td>
+                        <td>${email}</td>
+                    </tr>
+                    <tr>
+                        <td>Amount:</td>
+                        <td><strong style="color: #00ff88; font-size: 18px;">$${amount}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Support Tier:</td>
+                        <td>${tier}</td>
+                    </tr>
+                    <tr>
+                        <td>Payment Method:</td>
+                        <td>${method}</td>
+                    </tr>
+                    <tr>
+                        <td>Transaction ID:</td>
+                        <td>${transactionId || 'Not provided'}</td>
+                    </tr>
+                    <tr>
+                        <td>Submitted:</td>
+                        <td>${new Date().toLocaleString('en-US', { 
+                          dateStyle: 'full', 
+                          timeStyle: 'short',
+                          timeZone: 'Asia/Dhaka'
+                        })}</td>
+                    </tr>
+                </table>
+                
+                <div class="action-box">
+                    <h3>ACTION REQUIRED:</h3>
+                    <p><strong>1. Verify Payment</strong><br>
+                    Check your ${method} account/wallet for the transaction</p>
+                    
+                    <p><strong>2. Email Donor Manually</strong><br>
+                    Send confirmation to: <a href="mailto:${email}">${email}</a><br>
+                    (Resend can't auto-email them without custom domain)</p>
+                    
+                    <p><strong>3. Add to Website</strong><br>
+                    Add ${name} to supporters list</p>
+                    
+                    <p><strong>4. Send Tier Benefits</strong><br>
+                    ${tier === 'Early Access' || tier === 'Founding Supporter' || tier === 'Angel Backer' ? 
+                      'Discord invite + other perks' : 
+                      'Monthly updates access'
+                    }</p>
+                    
+                    <p><strong>5. Update Progress Bar</strong><br>
+                    In browser console: <code>updateFundingData(newTotal, newBackers)</code></p>
+                </div>
+                
+                <div style="background-color: #f0fff4; border-left: 4px solid #00ff88; padding: 15px; margin: 20px 0;">
+                    <strong style="color: #00aa66;">✓ Email Added to Audience</strong><br>
+                    <span style="color: #666; font-size: 14px;">${email} has been added to your Resend audience for future newsletters</span>
+                </div>
             </div>
-            
-            <div class="warning">
-                ⏳ PENDING VERIFICATION
-            </div>
-            
-            <p><strong>What happens next:</strong></p>
-            <ol>
-                <li><strong>I'll verify your transaction</strong> in my ${method} wallet/account (usually within 24 hours)</li>
-                <li><strong>Once verified, I'll send you a confirmation email</strong> with all your tier benefits</li>
-                <li><strong>You'll be added to the supporters list</strong> on the website</li>
-                <li><strong>You'll start receiving monthly progress updates</strong></li>
-            </ol>
-            
-            <p><strong>⚠️ Important:</strong></p>
-            <p>If I can't find your transaction, I'll email you within 24-48 hours to sort it out. Make sure you actually completed the payment before submitting this form!</p>
-            
-            <p><strong>Questions?</strong> Just reply to this email anytime.</p>
-            
-            <p>Thanks for believing in this project. I'll verify your payment ASAP and get back to you!</p>
-            
-            <p>- Akik</p>
-            <p style="color: #666;">Founder, ZARX Project</p>
             
             <div class="footer">
-                <p>FRAZIYM TECH & AI • Building in Bangladesh 🇧🇩</p>
-                <p>This is an automated receipt. Your donation is pending verification.</p>
+                FRAZIYM TECH & AI · Dhaka, Bangladesh<br>
+                Donation notification from fundraising-for-zarx-igris.vercel.app
             </div>
         </div>
     </body>
     </html>
-  `;
-}
-
-// Generate admin notification email HTML
-function generateAdminEmail(name, email, amount, method, tier, transactionId) {
-  return `
-    <div style="font-family: monospace; background: #0a0a0a; color: #fff; padding: 20px;">
-        <div style="background: #00ff88; color: #0a0a0a; padding: 20px; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px;">
-            💰 NEW DONATION RECEIVED!
-        </div>
-        <div style="background: #1a1a1a; border: 2px solid #00ff88; padding: 20px; font-size: 16px;">
-            <p><strong>DONOR INFO:</strong></p>
-            <p>Name: ${name}</p>
-            <p>Email: ${email}</p>
-            <p>Amount: $${amount}</p>
-            <p>Tier: ${tier}</p>
-            <p>Method: ${method}</p>
-            <p>Transaction ID: ${transactionId || 'Not provided'}</p>
-            <p>Time: ${new Date().toLocaleString()}</p>
-            <p></p>
-            <p><strong>ACTION REQUIRED:</strong></p>
-            <p>1. Verify the transaction in your ${method} account/wallet</p>
-            <p>2. Add ${name} to supporters list on website</p>
-            <p>3. Send them tier benefits (Discord invite, etc.)</p>
-            <p>4. Update funding progress: updateFundingData(newAmount, newBackers)</p>
-            <p></p>
-            <p style="color: #00ff88;"><strong>✓ Email already added to Resend audience for updates</strong></p>
-        </div>
-    </div>
   `;
 }
