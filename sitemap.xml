@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+<<<<<<< HEAD
     <loc>https://fundraising-for-zarx-igris.vercel.app/</loc>
+=======
+    <loc>https://Akik-Forazi.github.io/fundraising_for_fraziym/</loc>
+>>>>>>> 9538c1ddccdffc9729c648f06b659bf6f99add5a
     <lastmod>2026-01-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
